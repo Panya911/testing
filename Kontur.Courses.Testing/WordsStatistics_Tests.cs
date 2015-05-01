@@ -1,48 +1,145 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Kontur.Courses.Testing.Implementations;
 using NUnit.Framework;
 
 namespace Kontur.Courses.Testing
 {
-	public class WordsStatistics_Tests
-	{
-		public Func<IWordsStatistics> createStat = () => new WordsStatistics_CorrectImplementation(); // меняется на разные реализации при запуске exe
-		public IWordsStatistics stat;
+    public class WordsStatistics_Tests
+    {
+        public Func<IWordsStatistics> createStat = () => new WordsStatistics_CorrectImplementation();
+        // меняется на разные реализации при запуске exe
 
-		[SetUp]
-		public void SetUp()
-		{
-			stat = createStat();
-		}
+        public IWordsStatistics stat;
 
-		[Test]
-		public void no_stats_if_no_words()
-		{
-			CollectionAssert.IsEmpty(stat.GetStatistics());
-		}
+        [SetUp]
+        public void SetUp()
+        {
+            stat = createStat();
+        }
 
-		[Test]
-		public void same_word_twice()
-		{
-			stat.AddWord("xxx");
-			stat.AddWord("xxx");
-			CollectionAssert.AreEqual(new[] { Tuple.Create(2, "xxx") }, stat.GetStatistics());
-		}
+        [Test]
+        public void no_stats_if_no_words()
+        {
+            CollectionAssert.IsEmpty(stat.GetStatistics());
+        }
 
-		[Test]
-		public void single_word()
-		{
-			stat.AddWord("hello");
-			CollectionAssert.AreEqual(new[] { Tuple.Create(1, "hello") }, stat.GetStatistics());
-		}
+        [Test]
+        public void same_word_twice()
+        {
+            stat.AddWord("xxx");
+            stat.AddWord("xxx");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(2, "xxx") }, stat.GetStatistics());
+        }
 
-		[Test]
-		public void two_same_words_one_other()
-		{
-			stat.AddWord("hello");
-			stat.AddWord("world");
-			stat.AddWord("world");
-			CollectionAssert.AreEqual(new[] { Tuple.Create(2, "world"), Tuple.Create(1, "hello") }, stat.GetStatistics());
-		}
-	}
+        [Test]
+        public void single_word()
+        {
+            stat.AddWord("hello");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(1, "hello") }, stat.GetStatistics());
+        }
+
+        [Test]
+        public void two_same_words_one_other()
+        {
+            stat.AddWord("hello");
+            stat.AddWord("world");
+            stat.AddWord("world");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(2, "world"), Tuple.Create(1, "hello") }, stat.GetStatistics());
+        }
+
+        [Test]
+
+        public void words_same_count()
+        {
+            stat.AddWord("Hello");
+            stat.AddWord("hello");
+            stat.AddWord("world");
+            stat.AddWord("world");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(2, "hello"), Tuple.Create(2, "world") }, stat.GetStatistics());
+        }
+
+        [Test]
+        public void three_words()
+        {
+            stat.AddWord("hello");
+            stat.AddWord("worlds");
+            stat.AddWord("world");
+            CollectionAssert.AreEqual(
+                new[] { Tuple.Create(1, "hello"), Tuple.Create(1, "world"), Tuple.Create(1, "worlds") },
+                stat.GetStatistics());
+        }
+
+        [Test]
+        public void recreate_stat()
+        {
+            stat.AddWord("hello");
+            var stat2 = createStat();
+            stat2.AddWord("world");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(1, "hello") }, stat.GetStatistics());
+        }
+
+        [Test]
+        public void putNullorEmpty()
+        {
+            stat.AddWord("");
+            stat.AddWord(null);
+            Assert.IsEmpty(stat.GetStatistics());
+        }
+
+        [Test]
+        public void test_elevens_distinct()
+        {
+            stat.AddWord("abcdefghioZ");
+            stat.AddWord("abcdefghioK");
+            CollectionAssert.AreEqual(new[] { Tuple.Create(2, "abcdefghio") }, stat.GetStatistics());
+        }
+
+        [Test, Timeout(1000)]
+        public void test_many_different_strings()
+        {
+            var rnd = new Random();
+            var words = new Dictionary<string, int>();
+            for (var i = 0; i < 100000; i++)
+            {
+                var word = new char[10];
+                for (var ch = 0; ch < 10; ch++)
+                    word[ch] = (char)rnd.Next(50, 140);
+                var str = new string(word).ToLower();
+                int count;
+                words[str] = words.TryGetValue(str, out count) ? count + 1 : 1;
+            }
+            foreach (var word in words)
+            {
+                stat.AddWord(word.Key);
+            }
+            var expect = words//.Where(w => w.Value > 0)
+                .OrderByDescending(w => w.Value)
+                .ThenBy(w => w.Key)
+                .Select(pair => Tuple.Create(pair.Value, pair.Key));
+
+            CollectionAssert.AreEqual(expect, stat.GetStatistics());
+
+            //var result = new List<Tuple<int, string>> { Tuple.Create(1, "a") };
+            //for (var i = 0; i < 3; i++)
+            //{
+            //    var curRes = new List<Tuple<int, string>>();
+            //    foreach (var e in result) curRes.Add(e);
+
+            //    for (var j = 98; j < 110; j++)
+            //        foreach (var e in curRes)
+            //        {
+            //            result.Add(Tuple.Create(1, e.Item2 + (char)j));
+            //        }
+            //}
+            //foreach (var e in result.Distinct()) stat.AddWord(e.Item2);
+
+            //CollectionAssert.AreEqual(result.OrderBy(x => x.Item2).Distinct(), stat.GetStatistics());
+        }
+    }
 }
+
+
+//    }
+//}

@@ -8,7 +8,6 @@ namespace Kontur.Courses.Testing.Implementations
 	public class WordsStatistics1 : IWordsStatistics
 	{
 		private List<string> words = new List<string>();
-
 		public void AddWord(string word)
 		{
 			if (string.IsNullOrEmpty(word)) return;
@@ -120,7 +119,6 @@ namespace Kontur.Courses.Testing.Implementations
 				.Select(kv => Tuple.Create(kv.Value, kv.Key));
 		}
 	}
-
 	public class WordsStatistics7 : IWordsStatistics
 	{
 		private IDictionary<string, int> stats = new Dictionary<string, int>();

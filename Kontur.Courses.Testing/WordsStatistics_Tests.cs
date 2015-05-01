@@ -81,7 +81,7 @@ namespace Kontur.Courses.Testing
         }
 
         [Test]
-        public void putNullorEmpty()
+        public void putNullOrEmpty()
         {
             stat.AddWord("");
             stat.AddWord(null);
@@ -101,7 +101,7 @@ namespace Kontur.Courses.Testing
         {
             var rnd = new Random();
             var words = new Dictionary<string, int>();
-            for (var i = 0; i < 100000; i++)
+            for (var i = 0; i < 10000; i++)
             {
                 var word = new char[10];
                 for (var ch = 0; ch < 10; ch++)
@@ -110,36 +110,18 @@ namespace Kontur.Courses.Testing
                 int count;
                 words[str] = words.TryGetValue(str, out count) ? count + 1 : 1;
             }
+
+
             foreach (var word in words)
             {
                 stat.AddWord(word.Key);
             }
-            var expect = words//.Where(w => w.Value > 0)
-                .OrderByDescending(w => w.Value)
-                .ThenBy(w => w.Key)
-                .Select(pair => Tuple.Create(pair.Value, pair.Key));
+            var expect = words
+                            .OrderByDescending(w => w.Value)
+                            .ThenBy(w => w.Key)
+                            .Select(pair => Tuple.Create(pair.Value, pair.Key));
 
             CollectionAssert.AreEqual(expect, stat.GetStatistics());
-
-            //var result = new List<Tuple<int, string>> { Tuple.Create(1, "a") };
-            //for (var i = 0; i < 3; i++)
-            //{
-            //    var curRes = new List<Tuple<int, string>>();
-            //    foreach (var e in result) curRes.Add(e);
-
-            //    for (var j = 98; j < 110; j++)
-            //        foreach (var e in curRes)
-            //        {
-            //            result.Add(Tuple.Create(1, e.Item2 + (char)j));
-            //        }
-            //}
-            //foreach (var e in result.Distinct()) stat.AddWord(e.Item2);
-
-            //CollectionAssert.AreEqual(result.OrderBy(x => x.Item2).Distinct(), stat.GetStatistics());
         }
     }
 }
-
-
-//    }
-//}
